@@ -173,7 +173,7 @@ app.post('/api/generate-recipe', async (req, res) => {
         }
 
         // Call Gemini API (API key is safely stored on server)
-        const apiKey = process.env.GEMINI_API_KEY || 'AIzaSyA0swGiEqxrrvop88aXHw3v_VIkBl9jftw';
+        const apiKey = process.env.GEMINI_API_KEY ;
         if (!apiKey) {
             return res.status(500).json({ error: 'Gemini API key not configured on server' });
         }
