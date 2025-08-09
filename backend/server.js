@@ -244,3 +244,4 @@ app.listen(PORT, () => {
     console.log(`😊 Emotion-based recipes enabled!`);
     console.log(`📱 Frontend available at: http://localhost:${PORT}`);
 });
+
