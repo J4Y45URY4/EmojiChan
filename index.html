@@ -9,8 +9,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>🦄 Recipe Generator 🚀</h1>
-            <p class="subtitle">Transform emojis into culinary adventures</p>
+            <h1>🦄 Absurdist Recipe Generator 🚀</h1>
+            <p class="subtitle">Transform emojis into culinary adventures (or disasters)</p>
         </header>
 
         <main>
@@ -32,9 +32,11 @@
                     <h3>Try these examples:</h3>
                     <div class="example-buttons">
                         <button class="example-btn" onclick="setInput('🍕🧄🥩🧀')">Normal: Pizza Ingredients</button>
+                        <button class="example-btn" onclick="setInput('😊😋🌟✨')">Happy: Joyful Treats</button>
+                        <button class="example-btn" onclick="setInput('😢💙☔🍲')">Sad: Comfort Food</button>
+                        <button class="example-btn" onclick="setInput('❤️💕🌹🍰')">Love: Romantic Dish</button>
+                        <button class="example-btn" onclick="setInput('😠🔥🌶️⚡')">Angry: Spicy Fire</button>
                         <button class="example-btn" onclick="setInput('🦄💀🚀⚡')">Absurd: Mystical Chaos</button>
-                        <button class="example-btn" onclick="setInput('🍝🍅🧄🧈')">Normal: Pasta Night</button>
-                        <button class="example-btn" onclick="setInput('🐉🌙🔮💎')">Absurd: Dragon Magic</button>
                     </div>
                 </div>
             </div>
@@ -50,11 +52,12 @@
                     <p>Enter some emojis above to get started:</p>
                     <ul>
                         <li><strong>Food emojis</strong> (🍕🥩🧀) → Get realistic, cookable recipes</li>
+                        <li><strong>Emotion emojis</strong> (😊❤️😠) → Get mood-themed recipes</li>
                         <li><strong>Random emojis</strong> (🦄🚀💀) → Get hilariously absurd "recipes"</li>
                     </ul>
                     <p class="api-notice">
-                        <strong>⚠️ Setup Required:</strong> 
-                        You'll need to add your Google Gemini API key to the JavaScript file before this works!
+                        <strong>⚠️ Backend Required:</strong> 
+                        Make sure the backend server is running on http://localhost:5000
                     </p>
                 </div>
             </div>
@@ -62,7 +65,7 @@
 
         <footer>
             <p>Made with 💜 and a healthy dose of absurdism</p>
-            <p class="tech-note">Powered by Google Gemini 1.5 Flash</p>
+            <p class="tech-note">Powered by OpenAI GPT-4o-mini</p>
         </footer>
     </div>
 

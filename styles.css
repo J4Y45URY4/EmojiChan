@@ -278,6 +278,99 @@ main {
     font-weight: bold;
 }
 
+/* Emotion-based Recipe Styles */
+.emotion-indicator {
+    background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 20px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.emotion-recipe h3 {
+    font-style: italic;
+}
+
+.emotion-happy h3 {
+    color: #ff9800;
+    border-bottom-color: #ffcc02;
+}
+
+.emotion-sad h3 {
+    color: #3f51b5;
+    border-bottom-color: #7986cb;
+}
+
+.emotion-angry h3 {
+    color: #f44336;
+    border-bottom-color: #ef5350;
+}
+
+.emotion-love h3 {
+    color: #e91e63;
+    border-bottom-color: #f06292;
+}
+
+.emotion-excited h3 {
+    color: #ff5722;
+    border-bottom-color: #ff8a65;
+}
+
+.emotion-calm h3 {
+    color: #009688;
+    border-bottom-color: #4db6ac;
+}
+
+.emotion-scared h3 {
+    color: #795548;
+    border-bottom-color: #a1887f;
+}
+
+.emotion-sick h3 {
+    color: #607d8b;
+    border-bottom-color: #90a4ae;
+}
+
+.emotion-happy ul li::marker {
+    color: #ff9800;
+}
+
+.emotion-sad ul li::marker {
+    color: #3f51b5;
+}
+
+.emotion-angry ul li::marker {
+    color: #f44336;
+}
+
+.emotion-love ul li::marker {
+    color: #e91e63;
+}
+
+.emotion-excited ul li::marker {
+    color: #ff5722;
+}
+
+.emotion-calm ul li::marker {
+    color: #009688;
+}
+
+.emotion-scared ul li::marker {
+    color: #795548;
+}
+
+.emotion-sick ul li::marker {
+    color: #607d8b;
+}
+
 /* Error Styles */
 .error {
     background: #ffebee;

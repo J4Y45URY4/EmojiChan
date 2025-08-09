@@ -1,11 +1,10 @@
 /**
  * Absurdist Recipe Generator
  * Generates normal or absurd recipes based on emoji input
- * Calls backend API to keep API key hidden
  */
 
 async function generateRecipeFromEmojis(input) {
-    // Define common food-related emojis (same as before)
+    // Define common food-related emojis
     const commonFoodEmojis = [
         '🍕', '🥩', '🍫', '🥦', '🧀', '🥚', '🍌', '🍞', '🍔', '🍓', 
         '🥗', '🥔', '🍋', '🍅', '🥕', '🧄', '🧅', '🌶️', '🥒', '🥬',
@@ -22,8 +21,7 @@ async function generateRecipeFromEmojis(input) {
         '🧂', '🫘', '🌶️', '🫚', '🧄', '🧅', '🍄', '🥜', '🌰', '🫔',
         '🌮', '🌯', '🫔', '🥙', '🧆', '🥗', '🍲', '🍜', '🍝', '🥘',
         '🍛', '🍚', '🍙', '🍘', '🍱', '🍣', '🍤', '🍥', '🥮', '🧊',
-        '💦'
-    ];
+        '💦'];
 
     // Extract emojis from input
     const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu;
@@ -38,78 +36,36 @@ async function generateRecipeFromEmojis(input) {
     const foodRatio = foodEmojiCount / emojis.length;
     
     // Determine if we should generate normal or absurd recipe
-    const isNormalRecipe = foodRatio > 0.7; // More than 70% food emojis = normal recipe
+    const isNormalRecipe = foodRatio > 0.6; // More than 60% food emojis = normal recipe
 
-    let prompt;
-    if (isNormalRecipe) {
-        prompt = `Create a realistic, practical recipe based on these emojis: ${emojis.join(' ')}
-        
-        Guidelines:
-        - Create a plausible dish name that incorporates the emoji ingredients
-        - List 5-8 realistic ingredients with quantities
-        - Provide 4-6 clear, concise cooking steps
-        - Keep it practical and cookable
-        - Use a friendly, helpful tone
-        - if emotions are included, reflect them in the recipe (e.g., happy = cheerful dish, sad = comfort food)
-
-        
-        Format your response as:
-        **Recipe Name**
-        
-        **Ingredients:**
-        - ingredient 1
-        - ingredient 2  
-        
-        **Instructions:**
-        1. step 1
-        2. step 2`;
-    } else {
-        prompt = `Create an absolutely absurd, surreal recipe based on these emojis: ${emojis.join(' ')}
-        
-        Guidelines:
-        - Create a ridiculous dish name that sounds impossible
-        - List 5-8 "ingredients" that are completely related to the emojis
-        - Provide 4-6 hilariously impossible cooking steps
-        - Be creative, witty, and over-the-top
-        - Include scientific/absurd cooking methods
-        - Make it entertaining and funny
-        - Dont make it too complex
-        - if emotions are included, reflect them in the recipe (e.g., happy = cheerful dish, sad = comfort food)
-    
-        
-        Format your response as:
-        **Recipe Name**
-        
-        **Ingredients:**
-        - ingredient 1
-        - ingredient 2
-        
-        **Instructions:**
-        1. step 1
-        2. step 2`;
-    }
+    // Call secure backend API instead of Gemini directly
+    const API_BASE_URL = 'http://localhost:5000';
 
     try {
-        // Call your backend instead of Gemini API directly:
-        const response = await fetch('http://localhost:3000/generate-recipe', {
+        const response = await fetch(`${API_BASE_URL}/api/generate-recipe`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({
-                prompt: prompt,
-                temperature: isNormalRecipe ? 0.7 : 1.2
+                input: input
             })
         });
 
         if (!response.ok) {
-            throw new Error(`Backend API error: ${response.status} ${response.statusText}`);
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        const recipeText = data.candidates[0].content.parts[0].text;
+        const recipeText = data.recipeText;
+        const recipeType = data.recipeType || 'absurd';
+        const dominantEmotion = data.dominantEmotion;
+        const isNormalRecipe = recipeType === 'normal';
 
-        // Convert markdown-style text to HTML
-        const htmlRecipe = convertRecipeToHTML(recipeText, isNormalRecipe);
-
+        // Convert the markdown-style response to HTML
+        const htmlRecipe = convertRecipeToHTML(recipeText, isNormalRecipe, recipeType, dominantEmotion);
+        
         return htmlRecipe;
 
     } catch (error) {
@@ -117,7 +73,12 @@ async function generateRecipeFromEmojis(input) {
         return `<div class="error">
             <h3>Oops! Recipe generation failed 😅</h3>
             <p>Error: ${error.message}</p>
-            <p><strong>Make sure your backend server is running at http://localhost:3000</strong></p>
+            <p><strong>Make sure to:</strong></p>
+            <ul>
+                <li>The backend server is running on http://localhost:5000</li>
+                <li>Check your internet connection</li>
+                <li>Verify the backend has a valid Gemini API key configured</li>
+            </ul>
         </div>`;
     }
 }
@@ -125,17 +86,40 @@ async function generateRecipeFromEmojis(input) {
 /**
  * Converts the AI-generated recipe text to properly formatted HTML
  */
-function convertRecipeToHTML(recipeText, isNormal) {
+function convertRecipeToHTML(recipeText, isNormal, recipeType = 'absurd', dominantEmotion = null) {
     const lines = recipeText.split('\n').filter(line => line.trim());
     let html = '';
     let currentSection = '';
     
-    const recipeClass = isNormal ? 'normal-recipe' : 'absurd-recipe';
+    // Determine CSS class based on recipe type
+    let recipeClass = 'absurd-recipe';
+    if (isNormal) {
+        recipeClass = 'normal-recipe';
+    } else if (recipeType === 'emotion' && dominantEmotion) {
+        recipeClass = `emotion-recipe emotion-${dominantEmotion}`;
+    }
+    
     html += `<div class="recipe ${recipeClass}">`;
+    
+    // Add emotion indicator if it's an emotion-based recipe
+    if (recipeType === 'emotion' && dominantEmotion) {
+        const emotionEmojis = {
+            happy: '😊',
+            sad: '😢',
+            angry: '😠',
+            love: '❤️',
+            excited: '🤩',
+            calm: '😌',
+            scared: '😱',
+            sick: '🤒'
+        };
+        html += `<div class="emotion-indicator">${emotionEmojis[dominantEmotion]} ${dominantEmotion.toUpperCase()} THEMED RECIPE ${emotionEmojis[dominantEmotion]}</div>`;
+    }
     
     for (let line of lines) {
         line = line.trim();
         
+        // Recipe title (usually first line or marked with **)
         if (line.startsWith('**') && line.endsWith('**')) {
             const title = line.replace(/\*\*/g, '');
             if (title.toLowerCase().includes('ingredient')) {
@@ -150,12 +134,17 @@ function convertRecipeToHTML(recipeText, isNormal) {
                 currentSection = 'title';
             }
         }
+        // Ingredient items (start with -)
         else if (line.startsWith('-') && currentSection === 'ingredients') {
-            html += `<li>${line.substring(1).trim()}</li>`;
+            const ingredient = line.substring(1).trim();
+            html += `<li>${ingredient}</li>`;
         }
+        // Instruction items (start with number)
         else if (/^\d+\./.test(line) && currentSection === 'instructions') {
-            html += `<li>${line.replace(/^\d+\.\s*/, '')}</li>`;
+            const instruction = line.replace(/^\d+\.\s*/, '');
+            html += `<li>${instruction}</li>`;
         }
+        // Regular paragraph
         else if (line && !line.startsWith('**')) {
             if (currentSection === 'title' || !currentSection) {
                 html += `<h3>${line}</h3>`;
@@ -164,10 +153,16 @@ function convertRecipeToHTML(recipeText, isNormal) {
         }
     }
     
+    // Close any open tags
     if (currentSection === 'ingredients') html += '</ul>';
     if (currentSection === 'instructions') html += '</ol>';
     
     html += '</div>';
     
     return html;
+}
+
+// Export for use in other files or modules
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { generateRecipeFromEmojis };
 }
