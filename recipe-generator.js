@@ -1,10 +1,11 @@
 /**
  * Absurdist Recipe Generator
  * Generates normal or absurd recipes based on emoji input
+ * Calls backend API to keep API key hidden
  */
 
 async function generateRecipeFromEmojis(input) {
-    // Define common food-related emojis
+    // Define common food-related emojis (same as before)
     const commonFoodEmojis = [
         '🍕', '🥩', '🍫', '🥦', '🧀', '🥚', '🍌', '🍞', '🍔', '🍓', 
         '🥗', '🥔', '🍋', '🍅', '🥕', '🧄', '🧅', '🌶️', '🥒', '🥬',
@@ -21,7 +22,8 @@ async function generateRecipeFromEmojis(input) {
         '🧂', '🫘', '🌶️', '🫚', '🧄', '🧅', '🍄', '🥜', '🌰', '🫔',
         '🌮', '🌯', '🫔', '🥙', '🧆', '🥗', '🍲', '🍜', '🍝', '🥘',
         '🍛', '🍚', '🍙', '🍘', '🍱', '🍣', '🍤', '🍥', '🥮', '🧊',
-        '💦'];
+        '💦'
+    ];
 
     // Extract emojis from input
     const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu;
@@ -36,11 +38,8 @@ async function generateRecipeFromEmojis(input) {
     const foodRatio = foodEmojiCount / emojis.length;
     
     // Determine if we should generate normal or absurd recipe
-    const isNormalRecipe = foodRatio > 0.6; // More than 60% food emojis = normal recipe
+    const isNormalRecipe = foodRatio > 0.7; // More than 70% food emojis = normal recipe
 
-    // Prepare Google Gemini API call
-    const apiKey = 'AIzaSyA0swGiEqxrrvop88aXHw3v_VIkBl9jftw'; // Replace with your actual Gemini API key
-    
     let prompt;
     if (isNormalRecipe) {
         prompt = `Create a realistic, practical recipe based on these emojis: ${emojis.join(' ')}
@@ -59,18 +58,16 @@ async function generateRecipeFromEmojis(input) {
         
         **Ingredients:**
         - ingredient 1
-        - ingredient 2
-        (etc.)  
+        - ingredient 2  
         
         **Instructions:**
         1. step 1
-        2. step 2
-        (etc.)`;
+        2. step 2`;
     } else {
         prompt = `Create an absolutely absurd, surreal recipe based on these emojis: ${emojis.join(' ')}
         
         Guidelines:
-        - Create a ridiculous dish name that sounds mystical or impossible
+        - Create a ridiculous dish name that sounds impossible
         - List 5-8 "ingredients" that are completely related to the emojis
         - Provide 4-6 hilariously impossible cooking steps
         - Be creative, witty, and over-the-top
@@ -86,47 +83,33 @@ async function generateRecipeFromEmojis(input) {
         **Ingredients:**
         - ingredient 1
         - ingredient 2
-        (etc.)
         
         **Instructions:**
         1. step 1
-        2. step 2
-        (etc.)`;
+        2. step 2`;
     }
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        // Call your backend instead of Gemini API directly:
+        const response = await fetch('http://localhost:3000/generate-recipe', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [
-                    {
-                        parts: [
-                            {
-                                text: prompt
-                            }
-                        ]
-                    }
-                ],
-                generationConfig: {
-                    maxOutputTokens: 500,
-                    temperature: isNormalRecipe ? 0.7 : 1.2 // Higher creativity for absurd recipes
-                }
+                prompt: prompt,
+                temperature: isNormalRecipe ? 0.7 : 1.2
             })
         });
 
         if (!response.ok) {
-            throw new Error(`Gemini API Error: ${response.status} ${response.statusText}`);
+            throw new Error(`Backend API error: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
         const recipeText = data.candidates[0].content.parts[0].text;
 
-        // Convert the markdown-style response to HTML
+        // Convert markdown-style text to HTML
         const htmlRecipe = convertRecipeToHTML(recipeText, isNormalRecipe);
-        
+
         return htmlRecipe;
 
     } catch (error) {
@@ -134,12 +117,7 @@ async function generateRecipeFromEmojis(input) {
         return `<div class="error">
             <h3>Oops! Recipe generation failed 😅</h3>
             <p>Error: ${error.message}</p>
-            <p><strong>Make sure to:</strong></p>
-            <ul>
-                <li>Replace 'YOUR_GEMINI_API_KEY_HERE' with your actual Google Gemini API key</li>
-                <li>Check your internet connection</li>
-                <li>Verify your API key is valid and has sufficient quota</li>
-            </ul>
+            <p><strong>Make sure your backend server is running at http://localhost:3000</strong></p>
         </div>`;
     }
 }
@@ -158,7 +136,6 @@ function convertRecipeToHTML(recipeText, isNormal) {
     for (let line of lines) {
         line = line.trim();
         
-        // Recipe title (usually first line or marked with **)
         if (line.startsWith('**') && line.endsWith('**')) {
             const title = line.replace(/\*\*/g, '');
             if (title.toLowerCase().includes('ingredient')) {
@@ -173,17 +150,12 @@ function convertRecipeToHTML(recipeText, isNormal) {
                 currentSection = 'title';
             }
         }
-        // Ingredient items (start with -)
         else if (line.startsWith('-') && currentSection === 'ingredients') {
-            const ingredient = line.substring(1).trim();
-            html += `<li>${ingredient}</li>`;
+            html += `<li>${line.substring(1).trim()}</li>`;
         }
-        // Instruction items (start with number)
         else if (/^\d+\./.test(line) && currentSection === 'instructions') {
-            const instruction = line.replace(/^\d+\.\s*/, '');
-            html += `<li>${instruction}</li>`;
+            html += `<li>${line.replace(/^\d+\.\s*/, '')}</li>`;
         }
-        // Regular paragraph
         else if (line && !line.startsWith('**')) {
             if (currentSection === 'title' || !currentSection) {
                 html += `<h3>${line}</h3>`;
@@ -192,16 +164,10 @@ function convertRecipeToHTML(recipeText, isNormal) {
         }
     }
     
-    // Close any open tags
     if (currentSection === 'ingredients') html += '</ul>';
     if (currentSection === 'instructions') html += '</ol>';
     
     html += '</div>';
     
     return html;
-}
-
-// Export for use in other files or modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { generateRecipeFromEmojis };
 }
