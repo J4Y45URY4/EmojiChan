@@ -5,7 +5,7 @@
 
 
 ## Basic Details
-### Team Name: Sanjay Subhash, Jayasurya Jayakumar
+### Team Name: Naadan Coders
 
 
 ### Team Members
@@ -65,3 +65,4 @@ Made with ❤️ at TinkerHub Useless Projects
 
 ![Static Badge](https://img.shields.io/badge/TinkerHub-24?color=%23000000&link=https%3A%2F%2Fwww.tinkerhub.org%2F)
 ![Static Badge](https://img.shields.io/badge/UselessProjects--25-25?link=https%3A%2F%2Fwww.tinkerhub.org%2Fevents%2FQ2Q1TQKX6Q%2FUseless%2520Projects)
+
