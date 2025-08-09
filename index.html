@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦄 Absurdist Recipe Generator 🚀</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🦄 Absurdist Recipe Generator 🚀</h1>
+            <p class="subtitle">Transform emojis into culinary adventures (or disasters)</p>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <div class="emoji-input-container">
+                    <label for="emoji-input">Enter your emoji ingredients:</label>
+                    <input 
+                        type="text" 
+                        id="emoji-input" 
+                        placeholder="🍕🧄🥩 or 🦄💀🚀 - let your imagination run wild!"
+                        maxlength="100"
+                    >
+                    <button id="generate-btn" onclick="generateRecipe()">
+                        🧪 Generate Recipe
+                    </button>
+                </div>
+                
+                <div class="examples">
+                    <h3>Try these examples:</h3>
+                    <div class="example-buttons">
+                        <button class="example-btn" onclick="setInput('🍕🧄🥩🧀')">Normal: Pizza Ingredients</button>
+                        <button class="example-btn" onclick="setInput('🦄💀🚀⚡')">Absurd: Mystical Chaos</button>
+                        <button class="example-btn" onclick="setInput('🍝🍅🧄🧈')">Normal: Pasta Night</button>
+                        <button class="example-btn" onclick="setInput('🐉🌙🔮💎')">Absurd: Dragon Magic</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="loading" id="loading" style="display: none;">
+                <div class="spinner"></div>
+                <p>Conjuring your recipe from the digital ether... ✨</p>
+            </div>
+
+            <div class="recipe-output" id="recipe-output">
+                <div class="welcome-message">
+                    <h3>Welcome to the Recipe Generator! 👋</h3>
+                    <p>Enter some emojis above to get started:</p>
+                    <ul>
+                        <li><strong>Food emojis</strong> (🍕🥩🧀) → Get realistic, cookable recipes</li>
+                        <li><strong>Random emojis</strong> (🦄🚀💀) → Get hilariously absurd "recipes"</li>
+                    </ul>
+                    <p class="api-notice">
+                        <strong>⚠️ Setup Required:</strong> 
+                        You'll need to add your Google Gemini API key to the JavaScript file before this works!
+                    </p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Made with 💜 and a healthy dose of absurdism</p>
+            <p class="tech-note">Powered by Google Gemini 1.5 Flash</p>
+        </footer>
+    </div>
+
+    <script src="recipe-generator.js"></script>
+    <script>
+        // Main function to generate recipe from UI
+        async function generateRecipe() {
+            const input = document.getElementById('emoji-input').value.trim();
+            const outputDiv = document.getElementById('recipe-output');
+            const loadingDiv = document.getElementById('loading');
+            const generateBtn = document.getElementById('generate-btn');
+
+            if (!input) {
+                outputDiv.innerHTML = '<div class="error">Please enter some emojis first! 🤔</div>';
+                return;
+            }
+
+            // Show loading state
+            loadingDiv.style.display = 'block';
+            outputDiv.innerHTML = '';
+            generateBtn.disabled = true;
+            generateBtn.textContent = '🧪 Generating...';
+
+            try {
+                const recipe = await generateRecipeFromEmojis(input);
+                outputDiv.innerHTML = recipe;
+            } catch (error) {
+                console.error('Error:', error);
+                outputDiv.innerHTML = `<div class="error">
+                    <h3>Something went wrong! 😅</h3>
+                    <p>Error: ${error.message}</p>
+                </div>`;
+            } finally {
+                // Hide loading state
+                loadingDiv.style.display = 'none';
+                generateBtn.disabled = false;
+                generateBtn.textContent = '🧪 Generate Recipe';
+            }
+        }
+
+        // Helper function to set example inputs
+        function setInput(emojiString) {
+            document.getElementById('emoji-input').value = emojiString;
+        }
+
+        // Allow Enter key to trigger generation
+        document.getElementById('emoji-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                generateRecipe();
+            }
+        });
+
+        // Auto-focus the input field
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('emoji-input').focus();
+        });
+    </script>
+</body>
+</html>
