@@ -51,6 +51,8 @@ async function generateRecipeFromEmojis(input) {
         - Provide 4-6 clear, concise cooking steps
         - Keep it practical and cookable
         - Use a friendly, helpful tone
+        - if emotions are included, reflect them in the recipe (e.g., happy = cheerful dish, sad = comfort food)
+
         
         Format your response as:
         **Recipe Name**
@@ -75,7 +77,8 @@ async function generateRecipeFromEmojis(input) {
         - Include scientific/absurd cooking methods
         - Make it entertaining and funny
         - Dont make it too complex
-        -use malayalam as the language
+        - if emotions are included, reflect them in the recipe (e.g., happy = cheerful dish, sad = comfort food)
+    
         
         Format your response as:
         **Recipe Name**
